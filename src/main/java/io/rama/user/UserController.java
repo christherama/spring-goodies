@@ -1,5 +1,6 @@
 package io.rama.user;
 
+import io.rama.web.response.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +23,8 @@ public class UserController {
    * @return Serialized list of users
    */
   @RequestMapping(method = RequestMethod.GET)
-  public Iterable<User> getAllUsers() {
-    return users.findAll();
+  public Response getAllUsers() {
+    return Response.builder().data(users.findAll()).build();
   }
 
   /**
@@ -34,7 +35,7 @@ public class UserController {
    */
   @RequestMapping(method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
-  public User saveUser(@RequestBody User user) {
-    return users.save(user);
+  public Response saveUser(@RequestBody User user) {
+    return Response.builder().data(users.save(user)).build();
   }
 }
