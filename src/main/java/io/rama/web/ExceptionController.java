@@ -3,6 +3,7 @@ package io.rama.web;
 import io.rama.user.UserNotFoundException;
 import io.rama.web.error.Error;
 import io.rama.web.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,6 +15,7 @@ import java.util.Collections;
 /**
  * Handles uncaught exceptions from HTTP requests
  */
+@Slf4j
 @RestControllerAdvice
 public class ExceptionController {
 
@@ -40,6 +42,7 @@ public class ExceptionController {
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public Response unknownError(Exception ex) {
+    log.error("{} occurred: {}", ex.getClass().getSimpleName(), ex.getMessage());
     return Response.builder().errors(
         Collections.singletonList(new Error("A server error occurred"))
     ).build();

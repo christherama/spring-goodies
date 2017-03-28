@@ -1,6 +1,8 @@
 package io.rama.trip;
 
 import io.rama.user.User;
+import io.rama.user.UserNotFoundException;
+import io.rama.user.UserRepository;
 import io.rama.web.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/users/{id}/trips")
 public class TripController {
   private final TripRespository trips;
+  private final UserRepository users;
 
-  public TripController(TripRespository trips) {
+  public TripController(TripRespository trips, UserRepository users) {
     this.trips = trips;
+    this.users = users;
   }
 
   /**
@@ -45,7 +49,9 @@ public class TripController {
   @RequestMapping(method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.CREATED)
   public Response saveTrip(@RequestBody Trip trip, User user) {
-    trip.setUser(user);
+    User locatedUser = users.findByOrgIdAndUserId(user.getOrgId(),user.getUserId())
+        .orElseThrow(() -> new UserNotFoundException(user.getUserId()));
+    trip.setUser(locatedUser);
     return Response.builder().data(trips.save(trip)).build();
   }
 }
