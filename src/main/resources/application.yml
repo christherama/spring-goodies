@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: local
+
+logging:
+  level:
+    org: ERROR
+    io: INFO
