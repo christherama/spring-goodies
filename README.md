@@ -55,6 +55,11 @@ $ curl -X POST -H "Content-Type: application/json" -H "Org-Id: my-org" -d '{"org
 ```
 
 ## Using an `ApplicationRunner` to load initial data
+You could use an *import.sql* file at the root of your classpath for initial data upon booting your application. This works if you're using Hibernate *and* Hibernate is creating your schema. However, why not exercise the logic of your application to persist entities?
+
+To run a method at boot time, you can implement an `ApplicationRunner` and annotate it with `@Component`. Treat this just as you would any other component, autowiring any beans that you'll need at runtime. In [src/main/java/io/rama/DataLoader.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/DataLoader.java), we use constructor autowiring to inject a `UserRepository` for saving an initial user. Notice the omission of the `@Autowired` annotation, since the component has only one constructor.
+
+You'll see that the `DataLoader` component is annotated with `@Profile("local")`. When the "local" profile is active, the component will be loaded, and because it has implemented `ApplicationRunner`, its `run` method will be executed, thereby persisting a user. The inclusion of the `@Profile` annotation allows you to control whether or not initial data is loaded by setting the active profile accordingly.
 
 ## Resolving custom controller arguments with a `HandlerMethodArgumentResolver`
 
