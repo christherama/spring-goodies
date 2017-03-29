@@ -62,6 +62,28 @@ To run a method at boot time, you can implement an `ApplicationRunner` and annot
 You'll see that the `DataLoader` component is annotated with `@Profile("local")`. When the "local" profile is active, the component will be loaded, and because it has implemented `ApplicationRunner`, its `run` method will be executed, thereby persisting a user. The inclusion of the `@Profile` annotation allows you to control whether or not initial data is loaded by setting the active profile accordingly.
 
 ## Resolving custom controller arguments with a `HandlerMethodArgumentResolver`
+Controller methods in Spring are configured to understand certain argument types out of the box. Consider the following controller method:
+
+```java
+@RequestMapping(path = "/people/{id}")
+public Person getThePerson(@PathVariable Long id) {
+  // Implement the method (duh)
+}
+```
+
+When Spring receives the request `GET /people/123`, Spring will know to call the `getThePerson` method as a result of the `@RequestMapping` annotation. But how does Spring provide a value for the `id` parameter?
+
+Spring ships with built-in classes that implement the `HandlerMethodArgumentResolver` interface. This interface defines how controller methods resolve values for their defined parameters. For example, Spring uses the [PathVariableArgumentResolver](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/PathVariableMethodArgumentResolver.html) to pass a value into any parameter annotated with `@PathVariable`.
+
+To see which parameter types Spring supports out of the box, see the [supported method argument types](http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-ann-arguments).
+
+In our application, let's say we want to tell Spring how to resolve a `User` argument, with the `orgId` provided as a request header, and the `userId` provided as a path parameter. If we are going to be doing this across many methods in our API, we might find it convenient to consolidate this logic into a single `HandlerMethodArgumentResolver`.
+
+See [src/main/java/io/rama/web/request/UserHandlerMethodArgumentResolver.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/web/request/UserHandlerMethodArgumentResolver.java) as an example.
+
+Overall, you'll implement the `supportsParameter` method to return `true` when you want Spring to use a given `HandlerMethodArgumentResolver` to resolve a controller method argument. Then, you'll implement the `resolveArgument` method so that it returns the value that you want to pass into the controller method.
+
+If you define a custom resolver, don't forget to tell Spring about it via a `WebMvcConfigurerAdapter` that's been annotated with `@Configuration`. As an example, see [src/main/java/io/rama/config/WebConfig.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/config/WebConfig.java#L20).
 
 ## Handling application exceptions with `@ExceptionHandler` methods
 
