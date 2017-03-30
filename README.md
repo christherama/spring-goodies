@@ -86,5 +86,43 @@ Overall, you'll implement the `supportsParameter` method to return `true` when y
 If you define a custom resolver, don't forget to tell Spring about it via a `WebMvcConfigurerAdapter` that's been annotated with `@Configuration`. As an example, see [src/main/java/io/rama/config/WebConfig.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/config/WebConfig.java#L20).
 
 ## Handling application exceptions with `@ExceptionHandler` methods
+When a request is made to a Spring REST API, if an exception is thrown and not caught by the time the controller method returns a value, a JSON-serialized response might look like this:
+
+```javascript
+{
+  "timestamp": 1490895457664,
+  "status": 500,
+  "error": "Internal Server Error",
+  "exception": "io.rama.user.UserNotFoundException",
+  "message": "User with id 'chris' not found",
+  "path": "/users/chris/trips"
+}
+```
+
+A more intentional error response resulting from an exception might look like this:
+
+```javascript
+{
+  "errors": [
+    {
+      "message": "User with id 'chris' not found"
+    }
+  ]
+}
+```
+
+Spring offers the `@ExceptionHandler` as a convenient way to "catch" exceptions thrown by a controller or downstream call. Simply create a method annotated with `@ExceptionHandler` and specify the type of exception you want your method to handle, returning the object whose serialized value you'd like to use for the response. If you want to keep your exception handlers in a separate class, be sure to annotate the class with `@RestControllerAdvice`. Otherwise, the exception handler methods will apply to any request handled by the controller in which the exception handler methods exist.
+
+See [src/main/java/io/rama/web/ExceptionController.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/web/ExceptionController.java) as an example.
+
+Be sure to leverage your inheritance hierarchy for consistently handling families of exceptions. For example, if you have a `UserNotFoundException` and `TripNotFoundException` in your application, you could have them both subclass a `ResourceNotFoundException`, and write your exception handler accordingly:
+
+```java
+@ExceptionHandler(ResourceNotFoundException.class)
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public Response notFound(ResourceNotFoundException ex) {
+  // Do some stuff and return a thing
+}
+```
 
 ## Pre- and post-request processing with a `HandlerInterceptorAdapter`
