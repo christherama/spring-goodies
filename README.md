@@ -125,4 +125,9 @@ public Response notFound(ResourceNotFoundException ex) {
 }
 ```
 
-## Pre- and post-request processing with a `HandlerInterceptorAdapter`
+## Pre/post-request processing with a `HandlerInterceptorAdapter`
+Sometimes, you might find yourself performing the same action before or after every HTTP request. Spring allows you to inject some functionality at these times by configuring a `HandlerInterceptorAdapter`. For example, let's say you want to log the details of each HTTP request upon receiving one. Here's what you need to do:
+
+1. Write a class that extends `HandlerInterceptorAdapter`, and override the relevant methods originating from the `HandlerInterceptor` interface. For example, override the `preHandle` method to add logic after the `DispatcherServlet` has determined which controller method to invoke, but before actually invoking it. See [src/main/java/io/rama/web/request/LoggingHandlerInterceptorAdapter.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/web/request/LoggingHandlerInterceptorAdapter.java) for an example.
+
+2. Add your `HandlerInterceptorAdapter` to the Spring MVC lifecycle by overriding the `addInterceptors` method in a `WebMvcConfigurerAdapter` class that is annotated with `@Configuration`. See [src/main/java/io/rama/config/WebConfig.java](https://github.com/christherama/spring-goodies/blob/master/src/main/java/io/rama/config/WebConfig.java#L24) for an example.
